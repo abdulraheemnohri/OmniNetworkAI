@@ -1,16 +1,32 @@
-class SecurityManager:
-    def __init__(self):
-        self.whitelist = ["127.0.0.1", "192.168.1.5"] # Example
+import jwt
+import datetime
 
-    def authenticate_user(self, user_id):
-        # In a real app, check against a DB
-        return True
+class SecurityManager:
+    def __init__(self, secret_key="ONAIO_SECRET"):
+        self.secret_key = secret_key
+        self.whitelist = ["127.0.0.1", "192.168.1.5"]
+
+    def generate_token(self, user_id):
+        payload = {
+            "user_id": user_id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+        return jwt.encode(payload, self.secret_key, algorithm="HS256")
+
+    def verify_token(self, token):
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=["HS256"])
+            return payload["user_id"]
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
 
     def calculate_risk(self, command, intent):
         command = command.lower()
-        if "shutdown" in command or "format" in command or "delete" in command:
+        if any(word in command for word in ["shutdown", "format", "delete", "wipe"]):
             return 90
-        if "reboot" in command or "restart" in command:
+        if any(word in command for word in ["reboot", "restart", "block"]):
             return 40
         return 10
 
