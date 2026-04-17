@@ -1,13 +1,13 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from brain.intent_engine import IntentEngine
-from automation.task_engine import TaskEngine
-from brain.online_router import OnlineRouter
+from shared_core.command_parser import CommandParser
+from shared_core.automation import TaskEngine
+from ai_brain.online_router.router import OnlineRouter
 
 class TelegramBot:
     def __init__(self, token):
         self.token = token
-        self.intent_engine = IntentEngine()
+        self.parser = CommandParser()
         self.task_engine = TaskEngine()
         self.online_router = OnlineRouter()
         self.app = Application.builder().token(token).build()
@@ -22,7 +22,7 @@ class TelegramBot:
 
     async def handle_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         command = update.message.text
-        intent = self.intent_engine.classify_intent(command)
+        intent = self.parser.classify_intent(command)
 
         # Risk Scoring Mock
         risk_score = 0
