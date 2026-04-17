@@ -1,29 +1,24 @@
-from brain.offline_model import OfflineAIBrain
-from control.router.router_controller import RouterController
+import os
 from comms.telegram_bot import TelegramBot
+from brain.offline_model import OfflineAIBrain
+import threading
+
+def run_bot(token):
+    bot = TelegramBot(token)
+    bot.run()
 
 def main():
-    # Initialize AI Brain
-    brain = OfflineAIBrain()
+    print("🚀 Starting OmniNetwork AI Operator (ONAIO)...")
 
-    # Initialize Device Controllers
-    router = RouterController("192.168.1.1", "admin", "password")
+    # Load environment variables or use defaults
+    telegram_token = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 
-    # Initialize Telegram Bot
-    bot = TelegramBot("YOUR_TELEGRAM_BOT_TOKEN")
-
-    # Example: Process a command
-    command = "Restart the router"
-    response = brain.process_command(command)
-    print(f"AI Response: {response}")
-
-    # Execute command
-    if "restart" in command.lower() and "router" in command.lower():
-        result = router.restart()
-        print(f"Router Result: {result}")
-
-    # Start Telegram Bot
-    bot.run()
+    if telegram_token == "YOUR_TELEGRAM_BOT_TOKEN":
+        print("⚠️ Warning: TELEGRAM_BOT_TOKEN not set. Telegram features will not work.")
+    else:
+        # Start Telegram Bot in a separate thread if needed,
+        # but Application.run_polling() is blocking, so we'll just run it if it's the main interface.
+        run_bot(telegram_token)
 
 if __name__ == "__main__":
     main()
