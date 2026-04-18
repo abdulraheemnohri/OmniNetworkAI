@@ -50,6 +50,7 @@ chmod +x scripts/setup_linux_mac.sh
 ```
 
 #### 📱 Termux (Android)
+👉 **[Click here for the Step-by-Step Termux Guide (Hindi/Urdu)](TERMUX_GUIDE.md)**
 ```bash
 pkg install wget
 wget https://raw.githubusercontent.com/abdulraheemnohri/OmniNetworkAI/main/scripts/setup_termux.sh
