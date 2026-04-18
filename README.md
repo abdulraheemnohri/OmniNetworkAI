@@ -1,64 +1,69 @@
-# OmniOperator AI Suite
+# OmniOperator AI Suite (ONAIO)
 
 A unified AI control ecosystem for PCs, mobiles, network devices, CCTV, IoT, and web automation.
 
+**Repository URL**: [https://github.com/abdulraheemnohri/OmniNetworkAI.git](https://github.com/abdulraheemnohri/OmniNetworkAI.git)
+
 ## 🚀 Complete Installation Guide
 
-### Method A: Docker Deployment (Recommended - All Platforms)
-Ensure Docker and Docker Compose are installed.
-1. Clone the repo: `git clone https://github.com/your-repo/OmniOperator.git`
-2. Run: `docker-compose up -d`
-3. Access Dashboard at `http://localhost:3000`
+### Method A: Docker Deployment (Recommended)
+Deployment via Docker ensures that all dependencies (Nmap, ADB, Python environment) are perfectly configured.
+
+#### 🛠️ Docker Deep Dive
+- **Network Mode**: The system uses `bridge` mode by default, but for full network scanning, `host` mode is recommended on Linux.
+- **Volumes**:
+  - `ollama_data`: Persists your local AI models.
+  - `./config.json`: Mounted to keep your API keys and settings synchronized.
+- **Health Checks**: Containers are configured to restart automatically if they fail.
+
+#### 🏃 Quick Start with Docker
+```bash
+# 1. Clone the repository
+git clone https://github.com/abdulraheemnohri/OmniNetworkAI.git
+cd OmniNetworkAI
+
+# 2. Run the suite
+docker-compose up -d
+
+# 3. Access
+# Dashboard: http://localhost:3000
+# API: http://localhost:8000
+```
+
+---
 
 ### Method B: Non-Docker Installation (Manual)
 
 #### 🖥️ Windows
 1. Install [Python 3.11+](https://www.python.org/downloads/).
 2. Install [Nmap](https://nmap.org/download.html) and [ADB Platform Tools](https://developer.android.com/tools/releases/platform-tools).
-3. Open PowerShell and run:
+3. Run:
    ```powershell
    pip install -r requirements.txt
    python main.py --version 3
    ```
 
-#### 🐧 Linux (Ubuntu/Debian)
-Run the automated script:
-```bash
-chmod +x scripts/setup_linux_mac.sh
-./scripts/setup_linux_mac.sh
-```
-
-#### 🍎 macOS
-Ensure [Homebrew](https://brew.sh/) is installed, then run:
+#### 🐧 Linux (Ubuntu/Debian) / 🍎 macOS
 ```bash
 chmod +x scripts/setup_linux_mac.sh
 ./scripts/setup_linux_mac.sh
 ```
 
 #### 📱 Termux (Android)
-Install Termux from F-Droid, then run:
 ```bash
 pkg install wget
-wget https://raw.githubusercontent.com/your-repo/OmniOperator/main/scripts/setup_termux.sh
+wget https://raw.githubusercontent.com/abdulraheemnohri/OmniNetworkAI/main/scripts/setup_termux.sh
 chmod +x setup_termux.sh
 ./setup_termux.sh
 ```
 
 ## 🧠 AI API Providers Supported
-OmniOperator integrates with all major AI intelligence layers:
-- **Premium**: OpenAI (GPT-4o), Anthropic (Claude 3.5), Gemini 1.5 Pro.
-- **Free/No-Setup**:
-  - **Jules API**: Optimized developer interface.
-  - **Puter.js**: Zero-setup, user-pays model.
-  - **ApiFreeLLM**: Free 200B+ models.
-  - **Google AI Studio**: Free Gemini API.
-  - **Groq**: Ultra-fast free open-source models.
-  - **Routeway.ai / Z.ai**: Free GLM model access.
+OmniOperator integrates with 10+ AI intelligence layers, including **Jules API**, **Puter.js**, **Google AI Studio**, **Groq**, and **OpenRouter**.
 
 ## 🏗️ Project Architecture
-- **version1_cloud/**: Online-Only Operator.
-- **version2_offline/**: Local Operator using Ollama & Gemma 4.
-- **version3_hybrid/**: Flagship Hybrid Operator.
+- **version3_hybrid/**: Flagship Hybrid Operator (Default).
+- **agents/**: PC, Mobile, Network, CCTV, IoT, and Web agents.
+- **dashboard/**: Futuristic Next.js UI following the 'Digital Bastion' design.
 
 ---
 
