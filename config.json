@@ -1,19 +1,15 @@
 {
     "version": 3,
-    "telegram_token": "YOUR_TELEGRAM_TOKEN",
-    "router_ip": "192.168.1.1",
-    "router_user": "admin",
-    "router_pass": "password",
-    "api_port": 8000,
-    "security_secret": "ONAIO_SECRET_KEY_32_CHARS_LONG_FOR_JWT",
+    "telegram_token": "YOUR_TOKEN",
     "ai_providers": {
-        "openai_api_key": "YOUR_OPENAI_KEY",
-        "google_api_key": "YOUR_GEMINI_KEY",
-        "anthropic_api_key": "YOUR_CLAUDE_KEY",
-        "groq_api_key": "YOUR_GROQ_KEY",
-        "openrouter_api_key": "YOUR_OPENROUTER_KEY",
-        "perplexity_api_key": "YOUR_PERPLEXITY_KEY",
-        "mistral_api_key": "YOUR_MISTRAL_KEY",
-        "cohere_api_key": "YOUR_COHERE_KEY"
+        "julesapi_api_key": "YOUR_JULES_KEY",
+        "puter_api_key": "USER_PAYS",
+        "apifreellm_api_key": "FREE_KEY",
+        "google_api_key": "AI_STUDIO_FREE",
+        "routeway_api_key": "UNLIMITED_GLM",
+        "zai_api_key": "FREE_GLM",
+        "openai_api_key": "MOCK",
+        "anthropic_api_key": "MOCK",
+        "openrouter_api_key": "MOCK"
     }
 }
