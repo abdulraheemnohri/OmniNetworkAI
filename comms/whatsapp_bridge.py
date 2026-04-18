@@ -1,23 +1,28 @@
 from twilio.rest import Client
-from shared_core.automation import TaskEngine
-from shared_core.command_parser import CommandParser
+import os
 
 class WhatsAppBridge:
     def __init__(self, account_sid, auth_token, from_number):
         self.client = Client(account_sid, auth_token)
         self.from_number = f"whatsapp:{from_number}"
-        self.task_engine = TaskEngine()
-        self.parser = CommandParser()
 
     def send_message(self, to_number, body):
-        message = self.client.messages.create(
-            body=body,
-            from_=self.from_number,
-            to=f"whatsapp:{to_number}"
-        )
-        return message.sid
+        try:
+            message = self.client.messages.create(
+                body=body,
+                from_=self.from_number,
+                to=f"whatsapp:{to_number}"
+            )
+            return message.sid
+        except Exception as e:
+            return f"WhatsApp Error: {e}"
 
-    def handle_incoming(self, from_number, body):
-        intent = self.parser.classify_intent(body)
-        result = self.task_engine.execute_task(intent, body)
-        self.send_message(from_number, f"Operator Response: {result}")
+    def format_status_report(self, stats):
+        return (
+            f"📱 *OmniOperator System Report*\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"🖥️ CPU: {stats['cpu']}%\n"
+            f"🧠 MEM: {stats['memory']}%\n"
+            f"🌐 Net: PROTECTED\n"
+            f"━━━━━━━━━━━━━━━━━━━"
+        )

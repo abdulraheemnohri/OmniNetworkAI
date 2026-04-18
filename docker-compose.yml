@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  onaio-app:
+    build: .
+    container_name: onaio_operator
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    restart: always
+
+  onaio-dashboard:
+    build: ./dashboard/nextjs_ui
+    container_name: onaio_dashboard
+    ports:
+      - "3000:3000"
+    depends_on:
+      - onaio-app
+    restart: always
+
+  ollama-local:
+    image: ollama/ollama:latest
+    container_name: onaio_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: always
+
+volumes:
+  ollama_data:
