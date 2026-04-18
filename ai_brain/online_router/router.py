@@ -10,20 +10,28 @@ class OnlineRouter:
         if complexity == "simple":
             return "OFFLINE"
 
-        # Priority mapping
-        if "security" in task.lower() or "diagnostic" in task.lower():
+        task_lower = task.lower()
+        if "security" in task_lower or "diagnostic" in task_lower:
             return self.call_provider("Claude", task)
-        elif "code" in task.lower() or "script" in task.lower():
+        elif "code" in task_lower or "script" in task_lower:
             return self.call_provider("OpenAI", task)
-        elif "creative" in task.lower():
+        elif "creative" in task_lower or "explain" in task_lower:
             return self.call_provider("Gemini", task)
-        elif "speed" in task.lower():
+        elif "speed" in task_lower or "fast" in task_lower:
             return self.call_provider("Groq", task)
+        elif "web" in task_lower or "search" in task_lower:
+            return self.call_provider("Perplexity", task)
+        elif "mistral" in task_lower or "french" in task_lower:
+            return self.call_provider("Mistral", task)
         else:
             return self.call_provider("OpenRouter", task)
 
     def call_provider(self, provider_name, task):
-        key = self.config.get(f"{provider_name.lower()}_api_key", "MOCK_KEY")
-        # Ensure at least 5 chars for the key display or use mock
-        display_key = key[:5] if len(key) >= 5 else key
-        return f"RESPONSE from {provider_name} (Using Key: {display_key}...): Processed task: {task}"
+        key_name = f"{provider_name.lower()}_api_key"
+        key = self.config.get(key_name, "MOCK_KEY")
+
+        # Integration logic (placeholder for SDK calls)
+        if provider_name == "OpenRouter":
+            return f"[OpenRouter] Delegating task to best available model: {task}"
+
+        return f"[{provider_name}] API Call Success with Key {key[:5]}... Task: {task}"
