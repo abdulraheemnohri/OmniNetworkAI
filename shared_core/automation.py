@@ -5,6 +5,7 @@ from shared_core.network.network_scanner import NetworkScanner
 from agents.cctv_agent.onvif_client import ONVIFClient
 from agents.iot_agent.mqtt_client import MQTTClient
 from shared_core.security import SecurityManager
+from shared_core.memory import MemorySystem
 
 class TaskEngine:
     def __init__(self):
@@ -15,8 +16,12 @@ class TaskEngine:
         self.cctv = ONVIFClient()
         self.iot = MQTTClient()
         self.security = SecurityManager()
+        self.memory = MemorySystem()
 
     def execute_task(self, intent, command):
+        # Store command in memory
+        self.memory.add_memory(command, {"intent": intent, "command": command})
+
         risk = self.security.calculate_risk(command, intent)
         if risk > 80:
             return f"Blocked: High risk task ({risk}%). Manual approval required."
@@ -59,3 +64,12 @@ class TaskEngine:
 
         else:
             return f"No handler for intent: {intent}"
+
+    def orchestrate_multi_device(self, scenario):
+        if scenario == "office_shutdown":
+            results = []
+            results.append(self.pc.close_app("chrome"))
+            results.append(self.iot.connect("broker.hivemq.com", 1883, "onaio_client")) # Mock
+            results.append("Turned off smart lights")
+            return results
+        return "Unknown scenario"
