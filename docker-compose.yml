@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # The Core ONAIO Engine
   onaio-app:
     build: .
     container_name: onaio_operator
@@ -8,10 +9,17 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - /var/run/dbus:/var/run/dbus # Required for some PC control features
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # High-End Operator Dashboard
   onaio-dashboard:
     build: ./dashboard/nextjs_ui
     container_name: onaio_dashboard
@@ -19,8 +27,9 @@ services:
       - "3000:3000"
     depends_on:
       - onaio-app
-    restart: always
+    restart: unless-stopped
 
+  # Local Offline AI Engine
   ollama-local:
     image: ollama/ollama:latest
     container_name: onaio_ollama
@@ -28,7 +37,7 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    restart: always
+    restart: unless-stopped
 
 volumes:
   ollama_data:
