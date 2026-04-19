@@ -5,6 +5,7 @@ from shared_core.automation import TaskEngine
 from shared_core.security import SecurityManager
 from shared_core.config import ConfigManager
 from shared_core.command_parser import CommandParser
+from shared_core.analytics import AnalyticsSystem
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import uvicorn
@@ -25,6 +26,7 @@ security = SecurityManager()
 task_engine = TaskEngine()
 parser = CommandParser()
 config = ConfigManager()
+analytics = AnalyticsSystem()
 auth_scheme = HTTPBearer()
 
 class CommandRequest(BaseModel):
@@ -82,3 +84,13 @@ def get_devices(user_id: str = Depends(get_current_user)):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=config.get("api_port", 8000))
+
+@app.get("/analytics/history")
+def get_analytics_history(limit: int = 50, user_id: str = Depends(get_current_user)):
+    return {"history": analytics.get_history(limit)}
+
+@app.post("/voice/command")
+def process_voice_command(user_id: str = Depends(get_current_user)):
+    # In a real implementation, this would handle multipart audio upload
+    # and use a library like whisper or SpeechRecognition
+    return {"status": "success", "transcription": "Mock voice command", "result": "Voice commands coming soon to ONAIO!"}

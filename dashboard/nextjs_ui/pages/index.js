@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [command, setCommand] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [history, setHistory] = useState([]);
 
   const fetchStatus = async () => {
     try {
@@ -72,10 +73,24 @@ export default function Dashboard() {
     } catch (e) { console.error("Device fail"); }
   };
 
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/analytics/history`, {
+        headers: { "Authorization": `Bearer ${DEV_TOKEN}` }
+      });
+      const data = await res.json();
+      setHistory(data.history);
+    } catch (e) { console.error("History fail"); }
+  };
+
   useEffect(() => {
     fetchStatus();
     fetchDevices();
-    const interval = setInterval(fetchStatus, 5000);
+    fetchHistory();
+    const interval = setInterval(() => {
+       fetchStatus();
+       fetchHistory();
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -113,11 +128,10 @@ export default function Dashboard() {
     <div className="bg-[#060e20] min-h-screen text-[#dee5ff] font-sans selection:bg-[#86fea7]/30">
       <Head><title>OmniOperator AI | Command Deck</title></Head>
 
-      {/* Futuristic Nav */}
       <aside className="fixed left-0 top-0 h-screen w-20 bg-[#091328] border-r border-[#40485d]/10 flex flex-col items-center py-8 space-y-10 z-50">
         <div className="w-12 h-12 bg-gradient-to-tr from-[#86fea7] to-[#3bb668] rounded-2xl flex items-center justify-center text-[#060e20] font-black text-xl shadow-[0_0_15px_rgba(134,254,167,0.3)]">Ω</div>
         <nav className="flex flex-col space-y-8">
-           {['overview', 'devices', 'network', 'cctv', 'memory', 'settings'].map(tab => (
+           {['overview', 'devices', 'network', 'cctv', 'memory', 'analytics', 'settings'].map(tab => (
              <button
                key={tab}
                onClick={() => setActiveTab(tab)}
@@ -130,7 +144,6 @@ export default function Dashboard() {
       </aside>
 
       <main className="pl-28 pr-8 py-10 max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="flex justify-between items-center mb-16">
            <div>
               <h1 className="text-5xl font-black tracking-tighter text-white mb-2 italic">OMNI_OPERATOR</h1>
@@ -165,15 +178,13 @@ export default function Dashboard() {
             <div className="bg-[#0f1930] rounded-[2.5rem] p-10 border border-[#40485d]/10 min-h-[500px] shadow-2xl relative overflow-hidden">
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-2xl font-bold tracking-tight italic opacity-90">{activeTab.toUpperCase()}_INTERFACE</h2>
-                <div className="flex space-x-4">
-                   <button onClick={fetchDevices} className="text-[10px] border border-white/10 px-4 py-2 rounded-full hover:bg-white/5 transition-all uppercase tracking-widest font-bold">RE-INDEX</button>
-                </div>
+                <button onClick={fetchDevices} className="text-[10px] border border-white/10 px-4 py-2 rounded-full hover:bg-white/5 transition-all uppercase tracking-widest font-bold">RE-SYNC</button>
               </div>
 
               {activeTab === 'overview' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="p-8 bg-[#141f38] rounded-3xl border border-white/5">
-                      <div className="text-[#86fea7] text-[10px] font-bold mb-6 uppercase tracking-[0.2em]">Live Agents</div>
+                      <div className="text-[#86fea7] text-[10px] font-bold mb-6 uppercase tracking-[0.2em]">Active Matrix</div>
                       {['PC_KERNEL', 'MOBILE_ADB_01', 'SWITCH_SNMP_7', 'CCTV_ONVIF'].map(a => (
                         <div key={a} className="flex justify-between items-center mb-4 last:mb-0">
                            <span className="text-xs opacity-40 font-mono italic">{a}</span>
@@ -182,7 +193,7 @@ export default function Dashboard() {
                       ))}
                    </div>
                    <div className="flex flex-col justify-center items-center text-center opacity-10">
-                      <div className="text-9xl font-black tracking-tighter">O</div>
+                      <div className="text-9xl font-black tracking-tighter italic">O</div>
                       <div className="text-xs tracking-[1em] mt-[-20px]">MASTER_CORE</div>
                    </div>
                 </div>
@@ -194,6 +205,25 @@ export default function Dashboard() {
                 </div>
               )}
 
+              {activeTab === 'analytics' && (
+                <div className="space-y-4 font-mono text-[10px]">
+                   <div className="grid grid-cols-4 opacity-40 border-b border-white/5 pb-2 uppercase font-bold">
+                      <span>Timestamp</span>
+                      <span>CPU %</span>
+                      <span>MEM %</span>
+                      <span>Traffic</span>
+                   </div>
+                   {history.map((row, i) => (
+                     <div key={i} className="grid grid-cols-4 border-b border-white/5 pb-2 hover:bg-white/5 transition-all">
+                        <span>{row[1]}</span>
+                        <span className="text-[#86fea7]">{row[2]}%</span>
+                        <span className="text-cyan-400">{row[3]}%</span>
+                        <span className="opacity-60">{row[4]} MB/s</span>
+                     </div>
+                   ))}
+                </div>
+              )}
+
               {activeTab === 'memory' && (
                 <div className="space-y-6">
                    <form onSubmit={handleSearch} className="relative">
@@ -201,7 +231,7 @@ export default function Dashboard() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search Vector Memory..."
+                        placeholder="Query Vector Synapse..."
                         className="w-full bg-[#141f38] border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-[#86fea7]/40 transition-all text-sm"
                       />
                    </form>
@@ -209,7 +239,7 @@ export default function Dashboard() {
                       {searchResults.map((r, i) => (
                         <div key={i} className="p-4 bg-[#141f38] rounded-xl border-l-4 border-[#86fea7]">
                            <p className="text-sm opacity-80 mb-2">{r.text}</p>
-                           <div className="text-[10px] opacity-30 font-mono">{JSON.stringify(r.metadata)}</div>
+                           <div className="text-[10px] opacity-30 font-mono italic">{JSON.stringify(r.metadata)}</div>
                         </div>
                       ))}
                    </div>
@@ -218,9 +248,9 @@ export default function Dashboard() {
 
               {activeTab === 'settings' && (
                 <div className="grid grid-cols-2 gap-6">
-                   {['AUTO_RESTART_ROUTER', 'ALLOW_REMOTE_SHUTDOWN', 'CLOUD_FALLBACK', 'VERBOSE_LOGS'].map(s => (
+                   {['AUTO_HEAL_NET', 'ALLOW_KERNEL_EXEC', 'HYBRID_AI_BOOST', 'VERBOSE_METRICS'].map(s => (
                      <div key={s} className="p-6 bg-[#141f38] rounded-2xl flex justify-between items-center border border-white/5 hover:border-[#86fea7]/20 transition-all cursor-pointer">
-                        <span className="text-xs font-bold opacity-60 tracking-wider">{s}</span>
+                        <span className="text-xs font-bold opacity-60 tracking-wider font-mono">{s}</span>
                         <div className="w-10 h-5 bg-[#86fea7]/10 rounded-full relative">
                            <div className="absolute right-1 top-1 w-3 h-3 bg-[#86fea7] rounded-full shadow-[0_0_8px_#86fea7]"></div>
                         </div>
@@ -232,14 +262,13 @@ export default function Dashboard() {
           </div>
 
           <div className="col-span-12 lg:col-span-4 space-y-10">
-            {/* Console */}
             <div className="bg-[#000000]/60 rounded-[2rem] p-8 border border-[#40485d]/20 h-[600px] flex flex-col font-mono text-[11px] backdrop-blur-3xl shadow-2xl relative group">
                <div className="absolute -inset-1 bg-gradient-to-tr from-[#86fea7]/10 to-transparent rounded-[2.1rem] -z-10 group-hover:from-[#86fea7]/20 transition-all"></div>
                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-                  <span className="text-[10px] font-bold text-[#86fea7] tracking-widest opacity-80 uppercase">Root_Aegis_Shell</span>
+                  <span className="text-[10px] font-bold text-[#86fea7] tracking-widest opacity-80 uppercase">Aegis_Kernel_v4</span>
                   <div className="flex space-x-1.5">
-                    <div className="w-2.5 h-2.5 bg-red-500/30 rounded-full"></div>
-                    <div className="w-2.5 h-2.5 bg-green-500/30 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-red-500/30 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#86fea7]/30 rounded-full animate-pulse"></div>
                   </div>
                </div>
                <div className="flex-1 overflow-y-auto space-y-3 pr-4 flex flex-col-reverse scrollbar-hide">
@@ -253,22 +282,22 @@ export default function Dashboard() {
                <form onSubmit={handleCommand} className="mt-8 relative">
                   <input
                     type="text"
-                    placeholder="Enter Command Hash..."
+                    placeholder="Operator Command Sequence..."
                     value={command}
                     onChange={(e) => setCommand(e.target.value)}
                     className="w-full bg-[#141f38] border border-white/10 rounded-2xl py-5 px-6 outline-none focus:border-[#86fea7]/50 transition-all text-[#86fea7] placeholder:opacity-20"
                   />
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[#86fea7] opacity-40 font-black text-xl animate-pulse">_</div>
+                  <button onClick={() => alert("Voice active. Listening...")} className="absolute right-12 top-1/2 -translate-y-1/2 text-[#86fea7] opacity-20 hover:opacity-100 transition-all"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 005.945 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/></svg></button><div className="absolute right-6 top-1/2 -translate-y-1/2 text-[#86fea7] opacity-40 font-black text-xl animate-pulse">_</div>
                </form>
             </div>
 
-            {/* Quick Tactical Overrides */}
             <div className="bg-[#0f1930] p-8 rounded-[2rem] border border-[#40485d]/10">
                <h3 className="text-xs font-black mb-6 opacity-30 uppercase tracking-[0.4em]">Tactical_Actions</h3>
                <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => setCommand('scan network')} className="bg-white/5 hover:bg-[#86fea7]/20 p-4 rounded-2xl text-[10px] font-black transition-all border border-white/5 uppercase tracking-widest">Map_Net</button>
-                  <button onClick={() => setCommand('restart router')} className="bg-white/5 hover:bg-[#86fea7]/20 p-4 rounded-2xl text-[10px] font-black transition-all border border-white/5 uppercase tracking-widest">Reset_Gate</button>
-                  <button className="bg-red-500/5 hover:bg-red-500/20 text-red-500/60 p-4 rounded-2xl text-[10px] font-black transition-all border border-red-500/10 uppercase tracking-widest">Purge_Sys</button>
+                  <button onClick={() => setCommand('scan network')} className="bg-white/5 hover:bg-[#86fea7]/20 p-4 rounded-2xl text-[10px] font-black transition-all border border-white/5 uppercase tracking-widest">Index_Net</button>
+                  <button onClick={() => setCommand('restart router')} className="bg-white/5 hover:bg-[#86fea7]/20 p-4 rounded-2xl text-[10px] font-black transition-all border border-white/5 uppercase tracking-widest">Gate_Reset</button>
+                  <button onClick={() => setCommand('hello_world')} className="bg-[#86fea7]/5 hover:bg-[#86fea7]/10 text-[#86fea7]/60 p-4 rounded-2xl text-[10px] font-black transition-all border border-[#86fea7]/10 uppercase tracking-widest">Run_Plugin</button>
+                  <button className="bg-red-500/5 hover:bg-red-500/20 text-red-500/60 p-4 rounded-2xl text-[10px] font-black transition-all border border-red-500/10 uppercase tracking-widest">Panic_Wipe</button>
                </div>
             </div>
           </div>

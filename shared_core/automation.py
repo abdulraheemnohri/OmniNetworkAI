@@ -6,6 +6,7 @@ from agents.cctv_agent.onvif_client import ONVIFClient
 from agents.iot_agent.mqtt_client import MQTTClient
 from shared_core.security import SecurityManager
 from shared_core.memory import MemorySystem
+from shared_core.plugin_manager import PluginManager
 
 class TaskEngine:
     def __init__(self):
@@ -17,38 +18,41 @@ class TaskEngine:
         self.iot = MQTTClient()
         self.security = SecurityManager()
         self.memory = MemorySystem()
+        self.plugins = PluginManager()
+        self.plugins.load_plugins()
 
     def execute_task(self, intent, command):
-        # Store command in memory
         self.memory.add_memory(command, {"intent": intent, "command": command})
 
         risk = self.security.calculate_risk(command, intent)
         if risk > 80:
             return f"Blocked: High risk task ({risk}%). Manual approval required."
 
-        command = command.lower()
+        command_lower = command.lower()
 
         if intent == "COMPUTER_CONTROL":
-            if "open" in command:
+            if "open" in command_lower:
                 app = command.split("open")[-1].strip()
                 return self.pc.open_app(app)
-            elif "system" in command or "monitor" in command:
+            elif "system" in command_lower or "monitor" in command_lower:
                 return self.pc.system_monitor()
+            elif "process" in command_lower:
+                return self.pc.list_processes()
             else:
                 return "Unknown Computer Control command"
 
         elif intent == "ROUTER_CONTROL":
-            if "restart" in command or "reboot" in command:
+            if "restart" in command_lower or "reboot" in command_lower:
                 return self.router.restart()
-            elif "password" in command:
+            elif "password" in command_lower:
                 return self.router.change_wifi_password("new_secure_password")
             else:
                 return "Unknown Router Control command"
 
         elif intent == "MOBILE_CONTROL":
-            if "screenshot" in command:
+            if "screenshot" in command_lower:
                 return self.adb.screenshot()
-            elif "tap" in command:
+            elif "tap" in command_lower:
                 return self.adb.tap(100, 200)
             else:
                 return "Executing Mobile Control command via ADB"
@@ -62,14 +66,18 @@ class TaskEngine:
         elif intent == "IOT_CONTROL":
             return "Executing IoT command via MQTT"
 
-        else:
-            return f"No handler for intent: {intent}"
+        # Check for plugin execution
+        for plugin in self.plugins.list_plugins():
+            if plugin in command_lower:
+                return self.plugins.execute_plugin(plugin)
+
+        return f"No handler for intent: {intent}"
 
     def orchestrate_multi_device(self, scenario):
         if scenario == "office_shutdown":
             results = []
             results.append(self.pc.close_app("chrome"))
-            results.append(self.iot.connect("broker.hivemq.com", 1883, "onaio_client")) # Mock
+            results.append("IoT Device Link: Disconnected")
             results.append("Turned off smart lights")
             return results
         return "Unknown scenario"
